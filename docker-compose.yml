@@ -1,0 +1,48 @@
+services:
+  server:
+    build:
+      context: ./server
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      CLIENT_ORIGINS: ${CLIENT_ORIGINS:-http://localhost:8081,http://localhost:8082}
+      DEFAULT_ROOM_ID: ${ROOM_ID:-DEMO-123}
+      CROWD_ACTIONS_PER_SECOND: ${CROWD_ACTIONS_PER_SECOND:-4}
+      CROWD_AGGREGATION_WINDOW_MS: ${CROWD_AGGREGATION_WINDOW_MS:-5000}
+      AI_ENABLED: ${AI_ENABLED:-true}
+      AI_MOCK: ${AI_MOCK:-true}
+      AI_PROVIDER: gemini
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-2500}
+      TWITCH_CHANNEL: ${TWITCH_CHANNEL:-}
+      TWITCH_ROOM_ID: ${TWITCH_ROOM_ID:-}
+    restart: unless-stopped
+
+  game:
+    build:
+      context: ./game3d
+      args:
+        VITE_SOCKET_URL: ${SOCKET_URL:-http://localhost:3000}
+        VITE_ROOM_ID: ${ROOM_ID:-DEMO-123}
+        VITE_CONTROLLER_PUBLIC_URL: ${CONTROLLER_PUBLIC_URL:-http://localhost:8082}
+    ports:
+      - '8081:80'
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  controller:
+    build:
+      context: ./controller
+      args:
+        SOCKET_URL: ${SOCKET_URL:-http://localhost:3000}
+        CONTROLLER_PUBLIC_URL: ${CONTROLLER_PUBLIC_URL:-http://localhost:8082}
+        DEFAULT_ROOM_ID: ${ROOM_ID:-DEMO-123}
+    ports:
+      - '8082:80'
+    depends_on:
+      - server
+    restart: unless-stopped
