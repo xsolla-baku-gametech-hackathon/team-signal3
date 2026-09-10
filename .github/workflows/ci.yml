@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  game3d:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game3d
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game3d/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  controller:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: controller
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: controller/package-lock.json
+      - run: npm ci
+      - run: npm test -- --watch=false
+      - run: npm run build
+
+  minimal-example:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/minimal-canvas-integration
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/minimal-canvas-integration/package-lock.json
+      - run: npm ci
+      - run: npm run build
