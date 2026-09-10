@@ -1,0 +1,63 @@
+services:
+  - type: web
+    name: crowd-director-server
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: CLIENT_ORIGINS
+        value: https://crowd-director-game.onrender.com,https://crowd-director-controller.onrender.com
+      - key: DEFAULT_ROOM_ID
+        value: DEMO-123
+      - key: CROWD_ACTIONS_PER_SECOND
+        value: "4"
+      - key: CROWD_AGGREGATION_WINDOW_MS
+        value: "5000"
+      - key: AI_ENABLED
+        value: "true"
+      - key: AI_MOCK
+        value: "true"
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: AI_TIMEOUT_MS
+        value: "2500"
+      - key: TWITCH_CHANNEL
+        sync: false
+      - key: TWITCH_ROOM_ID
+        value: DEMO-123
+
+  - type: web
+    name: crowd-director-game
+    runtime: docker
+    dockerfilePath: ./game3d/Dockerfile
+    dockerContext: ./game3d
+    plan: free
+    envVars:
+      - key: VITE_SOCKET_URL
+        value: https://crowd-director-server.onrender.com
+      - key: VITE_CONTROLLER_PUBLIC_URL
+        value: https://crowd-director-controller.onrender.com
+      - key: VITE_ROOM_ID
+        value: DEMO-123
+
+  - type: web
+    name: crowd-director-controller
+    runtime: docker
+    dockerfilePath: ./controller/Dockerfile
+    dockerContext: ./controller
+    plan: free
+    envVars:
+      - key: SOCKET_URL
+        value: https://crowd-director-server.onrender.com
+      - key: CONTROLLER_PUBLIC_URL
+        value: https://crowd-director-controller.onrender.com
+      - key: DEFAULT_ROOM_ID
+        value: DEMO-123
