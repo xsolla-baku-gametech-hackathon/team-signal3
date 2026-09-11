@@ -211,6 +211,48 @@ client.reportGameState({ hp: player.health, shield: player.armor, score, wave })
       </Section>
 
       <Section
+        title="Bringing it to an existing game"
+        subtitle="You don't rewrite your game to adopt Crowd Director — you wire three things it already has into three SDK calls."
+      >
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card title="1. Install, don't rewrite">
+            <code>npm install @crowd-director/sdk</code>. No engine plugin, no core loop changes —
+            the client is a plain object your game holds a reference to.
+          </Card>
+          <Card title="2. Map events to what you already have">
+            In <code>onGameEvent</code>, call the functions your game already exposes —{' '}
+            <code>spawnEnemy()</code>, <code>healPlayer()</code>,{' '}
+            <code>triggerBossFight()</code> — instead of writing new gameplay code.
+          </Card>
+          <Card title="3. Report the state you already track">
+            <code>reportGameState()</code> just forwards fields your game loop already computes
+            (hp, score, wave). No new state to invent.
+          </Card>
+        </div>
+
+        <pre className="mt-8 overflow-x-auto rounded-xl border border-cyan-400/30 bg-slate-950 p-6 font-mono text-sm leading-relaxed text-cyan-50">
+          <code>{`// Inside a game you didn't write for Crowd Director:
+client.onGameEvent((event) => {
+  switch (event.type) {
+    case 'SPAWN_ZOMBIE': game.spawnEnemy(); break;
+    case 'HEAL':          game.healPlayer(event.amount); break;
+    case 'BOSS':          game.triggerBossFight(); break;
+    // map the rest to whatever your game already does
+  }
+});
+
+// Somewhere your update loop already runs:
+client.reportGameState({ hp: game.player.hp, score: game.score, wave: game.wave, ... });`}</code>
+        </pre>
+
+        <p className="mt-6 text-sm text-slate-400">
+          This is exactly what <code>examples/minimal-canvas-integration/</code> proves: the same
+          two SDK calls, dropped into a host that shares zero code with{' '}
+          <code>game3d/</code> — no fork, no engine-specific build, five lines of glue.
+        </p>
+      </Section>
+
+      <Section
         title="Architecture at a glance"
         subtitle="Every service talks Socket.IO only — the game and controller never talk to each other directly."
       >
