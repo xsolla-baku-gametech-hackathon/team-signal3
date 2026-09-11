@@ -1,0 +1,178 @@
+<p-toast position="top-center"></p-toast>
+
+<section class="room-shell">
+  <header class="room-header">
+    <div>
+      <p class="eyebrow">CROWD DIRECTOR</p>
+      <h1>{{ roomId() }}</h1>
+    </div>
+    <div class="status-stack">
+      <p-tag [value]="connectionState()" [severity]="connectionState() === 'ONLINE' ? 'success' : 'warn'" />
+      <span>{{ crowdCount() }} ONLINE</span>
+      <span>{{ gameLive() ? 'ROUND LIVE' : gameConnected() ? 'ROUND INACTIVE' : 'GAME OFFLINE' }}</span>
+    </div>
+  </header>
+
+  @if (socketService.voterStatus(); as voter) {
+    <div class="voter-badge" [class]="'tier-' + voter.tier">
+      <div class="voter-badge-row">
+        <strong>{{ voter.tierLabel }}</strong>
+        <span>{{ voter.dp }} DP</span>
+        <span class="voter-weight">{{ voter.voteWeight }}x VOTE</span>
+      </div>
+      <div class="voter-progress-track" [attr.aria-label]="voter.nextTierAt ? voter.dp + ' of ' + voter.nextTierAt + ' DP to next tier' : 'Top tier reached'">
+        <div class="voter-progress-fill" [style.width.%]="voterProgress()"></div>
+      </div>
+      <span class="voter-progress-label">
+        {{ voter.nextTierAt ? voter.dp + ' / ' + voter.nextTierAt + ' DP to ' + (voter.tier === 1 ? 'Tactical' : 'Master') + ' Director' : 'Top tier reached — VIP unlocked' }}
+      </span>
+    </div>
+  }
+
+  @if (leaderboard().length > 0) {
+    <section class="leaderboard" aria-label="Round leaderboard">
+      <h2 class="group-title">🏆 ROUND LEADERBOARD</h2>
+      @for (entry of leaderboard(); track entry.voterId; let rank = $index) {
+        <div class="leaderboard-row" [class.you]="isYou(entry.voterId)">
+          <span class="rank">#{{ rank + 1 }}</span>
+          <span class="voter-id">{{ isYou(entry.voterId) ? 'YOU' : (entry.nickname || ('#' + shortVoterId(entry.voterId))) }}</span>
+          <span class="tier-tag" [class]="'tier-' + entry.tier">{{ entry.tierLabel }}</span>
+          <span class="dp">{{ entry.dp }} DP</span>
+        </div>
+      }
+    </section>
+  }
+
+  <div class="signal-panel" [class.offline]="!gameLive()">
+    <span class="signal-dot"></span>
+    <strong>{{ roundLabel() }}</strong>
+  </div>
+
+  <section class="vote-feedback" aria-live="polite" aria-atomic="true">
+    @if (!gameLive()) {
+      <strong>{{ roundLabel() }}</strong>
+      <span>Voting opens when the next round starts.</span>
+    } @else if (socketService.pendingAction(); as action) {
+      <strong>Sending {{ formatAction(action) }} vote…</strong>
+    } @else if (socketService.actionResult(); as result) {
+      @if (result.status === 'sent') {
+        <strong>Your vote: {{ formatAction(result.action) }} ✓</strong>
+        <span>Vote received. Watch the arena for the next crowd decision.</span>
+      } @else {
+        <strong>{{ result.message }}</strong>
+      }
+    } @else {
+      <strong>Choose what happens next</strong>
+      <span>Votes are collected together before the next arena event.</span>
+    }
+  </section>
+
+  @if (socketService.latestDecision(); as decision) {
+    <section class="vote-feedback decision-panel" aria-live="polite">
+      <span>LAST ARENA DECISION</span>
+      <strong>{{ decision.final.event === 'NO_EVENT' ? 'A moment to breathe' : formatAction(decision.final.event) }}</strong>
+      <span>{{ decision.crowdSnapshot.totalActions }} votes · {{ decision.crowdSnapshot.uniqueParticipants }} participants</span>
+      <span>Crowd favourite: {{ formatAction(decision.crowdSnapshot.dominantAction) }} · {{ (decision.crowdSnapshot.consensus * 100).toFixed(0) }}%</span>
+      <span>{{ decision.final.reason }}</span>
+    </section>
+  }
+
+  <section class="tug-of-war" aria-label="Crowd sentiment: help vs. hinder">
+    <div class="tug-labels">
+      <span class="help-label">🛡️ SAVE {{ helpPercent() }}%</span>
+      <span class="hinder-label">{{ 100 - helpPercent() }}% SABOTAGE ☠️</span>
+    </div>
+    <div class="tug-bar">
+      <div class="tug-fill-help" [style.width.%]="helpPercent()"></div>
+    </div>
+  </section>
+
+  <section class="action-group" aria-label="Help the player">
+    <h2 class="group-title help-title">🛡️ HELP THE PLAYER</h2>
+    <div class="action-grid">
+      @for (action of helpActions; track action.type) {
+        <button
+          type="button"
+          class="action-button help-side"
+          [class.cyan]="action.tone === 'cyan'"
+          [class.magenta]="action.tone === 'magenta'"
+          [class.amber]="action.tone === 'amber'"
+          [class.violet]="action.tone === 'violet'"
+          [disabled]="!gameLive() || !!socketService.pendingAction() || getCooldownRemaining(action.type) > 0"
+          (click)="sendAction(action)"
+        >
+          <span class="icon"><i [class]="action.icon"></i></span>
+          <span class="copy">
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.description }}</small>
+          </span>
+          <span class="ready">{{ getCooldownRemaining(action.type) > 0 ? (getCooldownRemaining(action.type) / 1000).toFixed(1) + 's' : 'READY' }}</span>
+          <p-progressbar [value]="getCooldownProgress(action)" [showValue]="false" />
+        </button>
+      }
+      @if (isMasterDirector() && vipAction; as action) {
+        <button
+          type="button"
+          class="action-button help-side gold vip-button"
+          [disabled]="!gameLive() || !!socketService.pendingAction() || getCooldownRemaining(action.type) > 0"
+          (click)="sendAction(action)"
+        >
+          <span class="icon"><i [class]="action.icon"></i></span>
+          <span class="copy">
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.description }}</small>
+          </span>
+          <span class="ready">{{ getCooldownRemaining(action.type) > 0 ? (getCooldownRemaining(action.type) / 1000).toFixed(1) + 's' : 'READY' }}</span>
+          <p-progressbar [value]="getCooldownProgress(action)" [showValue]="false" />
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="action-group" aria-label="Make it harder">
+    <h2 class="group-title hinder-title">☠️ MAKE IT HARDER</h2>
+    <div class="action-grid">
+      @for (action of hinderActions; track action.type) {
+        <button
+          type="button"
+          class="action-button hinder-side"
+          [class.cyan]="action.tone === 'cyan'"
+          [class.magenta]="action.tone === 'magenta'"
+          [class.amber]="action.tone === 'amber'"
+          [class.violet]="action.tone === 'violet'"
+          [disabled]="!gameLive() || !!socketService.pendingAction() || getCooldownRemaining(action.type) > 0"
+          (click)="sendAction(action)"
+        >
+          <span class="icon"><i [class]="action.icon"></i></span>
+          <span class="copy">
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.description }}</small>
+          </span>
+          <span class="ready">{{ getCooldownRemaining(action.type) > 0 ? (getCooldownRemaining(action.type) / 1000).toFixed(1) + 's' : 'READY' }}</span>
+          <p-progressbar [value]="getCooldownProgress(action)" [showValue]="false" />
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="chat-panel" aria-label="Crowd chat">
+    <h2 class="group-title">💬 CROWD CHAT</h2>
+    <div class="chat-log" #chatLog>
+      @for (message of chatMessages(); track message.timestamp + message.voterId) {
+        <div class="chat-message" [class.you]="isYou(message.voterId)">
+          <span class="chat-meta">
+            <strong>{{ isYou(message.voterId) ? 'You' : message.nickname }}</strong>
+            <span class="chat-time">{{ formatTime(message.timestamp) }}</span>
+          </span>
+          <span class="chat-text">{{ message.text }}</span>
+        </div>
+      } @empty {
+        <span class="chat-empty">No messages yet — say something to the rest of the crowd.</span>
+      }
+    </div>
+    <form class="chat-input-row" (submit)="$event.preventDefault(); sendChat(chatInput); chatInput.focus()">
+      <input #chatInput type="text" maxlength="240" placeholder="Kill him? Save him? Say it here…" autocomplete="off" />
+      <button type="submit" class="chat-send">Send</button>
+    </form>
+  </section>
+</section>
