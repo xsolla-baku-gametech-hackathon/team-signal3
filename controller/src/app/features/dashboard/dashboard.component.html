@@ -1,0 +1,108 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <h1>CROWD DIRECTOR — LIVE DASHBOARD</h1>
+    <span class="connection-badge" [class.connection-badge--online]="connectionState() === 'ONLINE'">
+      {{ connectionState() }}
+    </span>
+  </header>
+
+  @if (isEmpty()) {
+    <div class="empty-state">Waiting for the first Director decision…</div>
+  } @else if (latest(); as decision) {
+    <div class="panels">
+      <section class="panel">
+        <h2>Live Decision</h2>
+        <div class="decision-row">
+          <span class="decision-label">Rule baseline</span>
+          <span>{{ decision.ruleBaseline.event }} / {{ decision.ruleBaseline.intensity | number: '1.2-2' }}</span>
+        </div>
+        <div class="decision-row">
+          <span class="decision-label">AI proposal</span>
+          @if (decision.aiProposal; as proposal) {
+            <span>{{ proposal.event }} / {{ proposal.intensity | number: '1.2-2' }}</span>
+          } @else {
+            <span>—</span>
+          }
+        </div>
+        <div class="decision-row decision-row--final">
+          <span class="decision-label">Final</span>
+          <span>{{ decision.final.event }} / {{ decision.final.intensity | number: '1.2-2' }}</span>
+          <p-tag [value]="decision.final.source" [severity]="severityFor(decision.final.source)" />
+        </div>
+        <p class="reason">{{ decision.final.reason }}</p>
+        <div class="meta">
+          <span>AI latency: {{ decision.aiLatencyMs !== undefined ? decision.aiLatencyMs + ' ms' : '—' }}</span>
+          @if (decision.fallbackReason) {
+            <span class="fallback-reason">Fallback: {{ decision.fallbackReason }}</span>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Crowd Snapshot</h2>
+        <ul class="vote-list">
+          @for (entry of voteEntries(); track entry[0]) {
+            <li>
+              <span>{{ entry[0] }}</span>
+              <span>{{ entry[1] }}</span>
+            </li>
+          }
+        </ul>
+        <div class="stat-grid">
+          <div><span class="stat-label">Dominant</span>{{ decision.crowdSnapshot.dominantAction }}</div>
+          <div><span class="stat-label">Consensus</span>{{ decision.crowdSnapshot.consensus | number: '1.2-2' }}</div>
+          <div><span class="stat-label">Aggression</span>{{ decision.crowdSnapshot.aggressionScore | number: '1.2-2' }}</div>
+          <div><span class="stat-label">Assistance</span>{{ decision.crowdSnapshot.assistanceScore | number: '1.2-2' }}</div>
+          <div><span class="stat-label">Total actions</span>{{ decision.crowdSnapshot.totalActions }}</div>
+          <div><span class="stat-label">Participants</span>{{ decision.crowdSnapshot.uniqueParticipants }}</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Game State <span class="live-dot" [class.live-dot--on]="connection.liveGameState() !== undefined"></span></h2>
+        @if (gameState(); as state) {
+          <div class="stat-grid">
+            <div><span class="stat-label">HP</span>{{ state.hp }}</div>
+            <div><span class="stat-label">Shield</span>{{ state.shield }}</div>
+            <div><span class="stat-label">Score</span>{{ state.score }}</div>
+            <div><span class="stat-label">Wave</span>{{ state.wave }}</div>
+            <div><span class="stat-label">Enemies</span>{{ state.enemyCount }}</div>
+          </div>
+          <div class="flags">
+            <span class="flag" [class.flag--on]="state.bossActive">Boss</span>
+            <span class="flag" [class.flag--on]="state.stormActive">Storm</span>
+            <span class="flag" [class.flag--on]="state.gameOver">Game Over</span>
+          </div>
+        }
+      </section>
+    </div>
+  }
+
+  <section class="panel history">
+    <h2>Decision History</h2>
+    @if (history().length === 0) {
+      <p class="empty-state empty-state--inline">No decisions yet.</p>
+    } @else {
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Source</th>
+            <th>Intensity</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of history(); track entry.timestamp) {
+            <tr>
+              <td>{{ entry.timestamp | date: 'HH:mm:ss' }}</td>
+              <td>{{ entry.event }}</td>
+              <td><p-tag [value]="entry.source" [severity]="severityFor(entry.source)" /></td>
+              <td>{{ entry.intensity | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>
