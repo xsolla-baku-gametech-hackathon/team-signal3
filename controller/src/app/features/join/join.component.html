@@ -1,0 +1,44 @@
+<section class="join-shell">
+  <div class="brand-block">
+    <p class="eyebrow">CROWD DIRECTOR</p>
+    <h1>Enter the arena</h1>
+    <p class="subtitle">Join the live room and shape the survival run from your phone.</p>
+  </div>
+
+  <form class="join-panel" (ngSubmit)="join()">
+    <div class="status-line">
+      <span>Connection</span>
+      <p-tag [value]="connectionLabel()" [severity]="connectionLabel() === 'ONLINE' ? 'success' : 'warn'" />
+    </div>
+
+    <label>
+      <span>ROOM CODE</span>
+      <input
+        pInputText
+        name="roomCode"
+        [ngModel]="roomCode()"
+        (ngModelChange)="roomCode.set($event)"
+        [readonly]="roomLocked()"
+        autocomplete="off"
+      />
+    </label>
+
+    <label>
+      <span>NICKNAME</span>
+      <input
+        pInputText
+        name="nickname"
+        [ngModel]="nickname()"
+        (ngModelChange)="nickname.set($event)"
+        placeholder="Guest-482"
+        autocomplete="nickname"
+      />
+    </label>
+
+    @if (roomError()) {
+      <p role="alert">{{ roomError() }}</p>
+    }
+
+    <button pButton type="submit" label="JOIN CROWD" icon="pi pi-users"></button>
+  </form>
+</section>
