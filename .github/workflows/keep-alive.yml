@@ -1,0 +1,17 @@
+name: Keep Render services warm
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping server
+        run: curl -sS -o /dev/null -w "server: %{http_code} (%{time_total}s)\n" --max-time 90 https://crowd-director-server.onrender.com/health
+      - name: Ping game3d
+        run: curl -sS -o /dev/null -w "game: %{http_code} (%{time_total}s)\n" --max-time 90 https://crowd-director-game.onrender.com
+      - name: Ping controller
+        run: curl -sS -o /dev/null -w "controller: %{http_code} (%{time_total}s)\n" --max-time 90 https://crowd-director-controller.onrender.com
