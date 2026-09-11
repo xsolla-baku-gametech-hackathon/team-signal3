@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crowd Director — minimal integration</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #05070d; font-family: monospace; }
+      #app { position: relative; width: 100%; height: 100%; }
+      canvas { display: block; }
+      #log {
+        position: absolute; bottom: 0; left: 0; right: 0; max-height: 30%;
+        overflow-y: auto; color: #9fe; font-size: 12px; padding: 8px 12px;
+        background: rgba(0,0,0,0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+      <div id="log"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
