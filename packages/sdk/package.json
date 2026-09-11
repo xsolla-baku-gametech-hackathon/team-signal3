@@ -1,0 +1,39 @@
+{
+  "name": "@crowd-director/sdk",
+  "version": "0.1.0",
+  "description": "Engine-agnostic client SDK for Crowd Director — connect any game to a live crowd-voted Rule Engine + AI Director pipeline over Socket.IO.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  },
+  "keywords": [
+    "crowd-director",
+    "sdk",
+    "socket.io",
+    "game",
+    "twitch-plays"
+  ]
+}
