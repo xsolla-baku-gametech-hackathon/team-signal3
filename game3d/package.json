@@ -1,0 +1,25 @@
+{
+  "name": "crowd-director-game3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5180",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 5180",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "@types/three": "^0.185.4",
+    "happy-dom": "^20.14.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4"
+  }
+}
