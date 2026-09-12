@@ -56,9 +56,3 @@ Script:
 | **Best Code** | `README.md` architecture diagram, CI badge (all 3 services tested on every push), 52 tests across the stack |
 | **GitHub Star** | Point them at the repo, the README screenshots, ask for a star before they walk away |
 
-## What's still missing, if there's time before judging
-
-- [ ] A recorded 30-60s demo GIF/video embedded in the README, as a fallback if live Wi-Fi fails during judging
-- [ ] Warm up all 3 Render URLs ~5-10 min before your slot regardless of the keep-alive job
-- [ ] Confirm the specific Day-1 workshop trend/problem to name in the "why it matters" section — this doc leaves that generic on purpose since only you know what was raised
-- [ ] To demo the Twitch bridge live: have your own Twitch channel's chat open in a browser tab so *you* (not the judges) type `!lightning` etc. during the pitch — 10 seconds, framed as "proof it also works from Twitch," never as something you ask the room to do instead of the phone controller
